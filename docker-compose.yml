@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:16.4 
+    restart: always    
+    environment:
+      POSTGRES_USER: giga
+      POSTGRES_PASSWORD: junglebook
+      MYSQL_PASSWORD: password
+      MYSQL_DATABASE: snippetbox 
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    ports:
+      - "3307:3306"   
+
+  adminer:
+    image: adminer     
+    restart: always    
+    environment:
+      ADMINER_DESIGN: dracula 
+    ports:
+      - "8080:8080"    
