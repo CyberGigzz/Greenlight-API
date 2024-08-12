@@ -1,0 +1,23 @@
+meta {
+  name: GET
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:4000/v1/movies
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "title": "",
+    "year": 1000,
+    "runtime": "-123 mins",
+    "genres": [
+      "sci-fi",
+      "sci-fi"
+    ]
+  }
+}
