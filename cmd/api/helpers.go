@@ -111,7 +111,7 @@ func (app *application) readString(qs url.Values, key string, defaultValue strin
 
 func (app *application) readCSV(qs url.Values, key string, defaultValue []string) []string {
 	csv := qs.Get(key)
-
+	
 	if csv == "" {
 		return defaultValue
 	}
