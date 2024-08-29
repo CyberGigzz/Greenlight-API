@@ -6,12 +6,14 @@ import (
 	"flag"
 	"log"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"greenlight.gigakatamadze.net/internal/data"
 	"greenlight.gigakatamadze.net/internal/jsonlog"
+	"greenlight.gigakatamadze.net/internal/mailer"
 )
 
 const version = "1.0.0"
@@ -30,12 +32,21 @@ type config struct {
         burst   int
         enabled bool
     }
+	smtp struct {
+        host     string
+        port     int
+        username string
+        password string
+        sender   string
+    }
 }
 
 type application struct {
-	config config
-	logger *jsonlog.Logger
-	models data.Models
+    config config
+    logger *jsonlog.Logger
+    models data.Models
+    mailer mailer.Mailer
+	wg     sync.WaitGroup
 }
 
 func main() {
@@ -58,6 +69,12 @@ func main() {
     flag.IntVar(&cfg.limiter.burst, "limiter-burst", 4, "Rate limiter maximum burst")
     flag.BoolVar(&cfg.limiter.enabled, "limiter-enabled", true, "Enable rate limiter")
 
+	flag.StringVar(&cfg.smtp.host, "smtp-host", "sandbox.smtp.mailtrap.io", "SMTP host")
+    flag.IntVar(&cfg.smtp.port, "smtp-port", 2525, "SMTP port")
+    flag.StringVar(&cfg.smtp.username, "smtp-username", "3aeaabfa2eb28e", "SMTP username")
+    flag.StringVar(&cfg.smtp.password, "smtp-password", "4d8740b0ceef83", "SMTP password")
+    flag.StringVar(&cfg.smtp.sender, "smtp-sender", "no-reply@gigakatamadze.net", "SMTP sender")
+
 	flag.Parse()
 
 	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
@@ -74,6 +91,7 @@ func main() {
 		config: cfg,
 		logger: logger,
 		models: data.NewModels(db),
+		mailer: mailer.New(cfg.smtp.host, cfg.smtp.port, cfg.smtp.username, cfg.smtp.password, cfg.smtp.sender),
 	}
 
 	err = app.serve()
